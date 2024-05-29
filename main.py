@@ -36,6 +36,16 @@ def parse_term(raw_terms: list[str]) -> set[str]:
             terms.extend((match.lower() for match in matches))
     return set(terms)
 
+
+def read_existed_cards() -> set[str]:
+    set_of_terms = set()
+    with open("data/anki_cards.txt", "r") as f:
+        for line in f.readlines():
+            term = line.split("|")[0]
+            set_of_terms.add(term)
+    return set_of_terms
+
+
 def tranlate_term_deepl(term: str) -> str:
     if not DEEPL_API_KEY:
         raise Exception('No DEEPL_API_KEY provided')
@@ -75,30 +85,39 @@ def fill_term(term: str) -> Term:
     definition = get_definition(term)
     synonims = get_synonyms(term)
     return Term(term, translation_deepl, translation_google, definition, synonims)
-    
-def reformat_vocabulary(input_file) -> list[Term]:
+
+
+def reformat_vocabulary(input_file, redo=False) -> list[Term]:
+    existed_terms = set()
+    if not redo:
+        existed_terms = read_existed_cards()
     vocabulary: list[Term] = []
     with open(input_file, 'r') as f:
         content = f.read()
     raw_terms: list[str] = content.split(BOOX_TERM_DELIMITER)
     terms: set[str] = parse_term(raw_terms)
     for term in terms:
-        vocabulary.append(fill_term(term))
+        if term not in existed_terms:
+            vocabulary.append(fill_term(term))
     return vocabulary
 
+
 def anki_card_generator(vocabulary: list[Term]) -> None:
-    with open('example_data/anki_cards.txt', 'w') as f:
+    with open("data/anki_cards.txt", "w") as f:
         for term in vocabulary:
-            f.write(f'{term.term}|({term.translation_deepl}, {term.translation_google}); {term.definition}; Synonims {term.synonims} \n')
+            traslation = ",".join({term.translation_google, term.translation_deepl})
+            f.write(
+                f"{term.term}|({traslation}); {term.definition}; Synonims {term.synonims} \n"
+            )
 
 def main():
-    input_file = 'example_data/test.txt'
-    vocabulary = reformat_vocabulary(input_file)
+    input_file = "data/test.txt"
+    vocabulary = reformat_vocabulary(input_file, redo=True)
     anki_card_generator(vocabulary)
     print('Anki cards generated successfully')
-    print('Check example_data/anki_cards.txt')
+    print("Check data/anki_cards.txt")
     print(len(vocabulary), 'cards generated')
     print('Vocabulary:', vocabulary)
-    
+
 if __name__ == '__main__':
     main()

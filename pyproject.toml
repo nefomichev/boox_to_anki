@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "boox-to-anki"
+version = "0.1.0"
+description = "Simple script to convert boox vocabular list export into the e Anki cards"
+authors = ["Nikita Fomichev <nefomichev@gmail.com>"]
+readme = "README.md"
+packages = [{include = "boox_to_anki"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+nltk = "^3.8.1"
+deepl = "^1.18.0"
+python-dotenv = "^1.0.1"
+googletrans ="3.1.0a0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
